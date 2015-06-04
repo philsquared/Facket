@@ -4,14 +4,14 @@ open System.IO
 open Utility
 open Types
 
-let isBlankLineOrComment (line:string) = line.Trim() = "" || line.Trim().StartsWith "#"
+let notBlankLineOrComment (line:string) = line.Trim() <> "" && not (line.Trim().StartsWith "#")
 
 let maxTimestamp (manifest:Manifest) = 
     manifest.packages |> Seq.map( fun kvp -> kvp.Value ) |> Seq.max
 
 let loadDependenciesManifest filename = 
     let packageMap = File.ReadLines filename
-                        |> Seq.filter isBlankLineOrComment
+                        |> Seq.filter notBlankLineOrComment
                         |> Seq.map( fun (line:string) -> 
                                 match line.Split( [|"=>"|], System.StringSplitOptions.None ) with
                                 | [|package|]           -> (package.Trim(), Path.GetDirectoryName (package.Trim()))
@@ -23,7 +23,7 @@ let loadDependenciesManifest filename =
 
 let loadManifest filename =
     let packages = File.ReadLines filename
-                    |> Seq.filter isBlankLineOrComment
+                    |> Seq.filter notBlankLineOrComment
                     |> Seq.map( fun (line:string) -> 
                             match line.Trim().Split( [|" "|], System.StringSplitOptions.None ) with
                             | [|timestamp; package|] -> (package, (System.DateTime.Parse timestamp).ToUniversalTime())
@@ -54,7 +54,5 @@ let getManifestTimestamp filename =
 
 //loadDependenciesManifest "/Development/OSS/Facket/Demo/local/facket.dependencies"
 //let m = createManifest "/Development/OSS/Facket/Demo/remote"
-//let m = loadManifest "/Development/OSS/Facket/Demo/remote/facket.manifest"
 //writeManifest m "/Development/OSS/Facket/Demo/remote/facket.manifest"
-//maxTimestamp m
-//let dt = System.DateTime.Now.ToUniversalTime()
+//let m = loadManifest "/Development/OSS/Facket/Demo/remote/facket.manifest"
